@@ -1,12 +1,31 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 
 # Create your views here.
+from .forms import PostForm
 from .models import Post
 
 def post_create(request):
 
-	return HttpResponse("<h1>Create</h1>")
+	form = PostForm(request.POST or None)
+	if form.is_valid():
+		instance = form.save(commit=False)
+		instance.save()
+		return HttpResponseRedirect(instance.get_absolute_url())
+
+	# below is not robust
+	# if request.method == "POST":
+	# 	print request.POST.get("content")
+	# 	print request.POST.get("title")
+		# Posts.objects.Create()
+
+
+	context = {
+		"form" : form,
+
+	}
+
+	return render(request, "post_form.html", context)
 
 def post_detail(request, id):
 
@@ -15,7 +34,7 @@ def post_detail(request, id):
 
 	context = {
 		"title": instance.title,
-		"obj" : instance.content,
+		"instance" : instance,
 	}
 	return render(request, "post_detail.html", context)
 
@@ -26,7 +45,7 @@ def post_list(request):
 		context = {
 			"objectlist" : queryset,
 			"title": "List"
-		}
+		}	
 	else:
 		context = {
 			"title": "List but not auth"
@@ -34,9 +53,22 @@ def post_list(request):
 	return render(request, "index.html", context)
 
 
-def post_update(request):
+def post_update(request, id=None):
 
-	return HttpResponse("<h1>Update</h1>")
+	instance = get_object_or_404(Post, id=id)
+	form = PostForm(request.POST or None, instance=instance)
+	if form.is_valid():
+		instance = form.save(commit=False)
+		instance.save()
+		# success message
+		return HttpResponseRedirect(instance.get_absolute_url())
+
+	context = {
+		"title": instance.title,
+		"instance" : instance,
+		"form":form,
+	}
+	return render(request, "post_form.html", context)
 
 def post_delete(request):
 
