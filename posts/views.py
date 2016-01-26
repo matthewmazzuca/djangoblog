@@ -54,7 +54,7 @@ def post_list(request):
 		context = {
 			"title": "List but not auth"
 		}
-	return render(request, "index.html", context)
+	return render(request, "base.html", context)
 
 
 def post_update(request, id=None):
